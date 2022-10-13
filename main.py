@@ -3,17 +3,21 @@
 # encoding: utf-8
 import encodings
 from importlib import *
+import keyword
 import os
 import unicodedata
 import speech_recognition as sr
 import pyaudio
 import requests
 import json
-import sys
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 from naoqi import *
 
-IP = "172.30.77.82"
-PORT = 9559
+IP = str(os.getenv('NAO_IP'))
+PORT = str(os.getenv('NAO_PORT'))
 def configNao(Name):
     try:
         tts = ALProxy(Name, IP, PORT)
@@ -27,7 +31,7 @@ url = "https://api.openai.com/v1/completions"
 
 headers = {
 'Content-Type': 'application/json',
-'Authorization': 'Bearer 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'
+'Authorization': os.getenv('OPENAI-KEY')
 }
 start_sequence = "\nAI:"
 restart_sequence = "\nHuman: "
@@ -80,20 +84,27 @@ def naoSay(proxy,text):
 proxySpeech = configNao("ALTextToSpeech")
 proxySpeech.setParameter("pitchShift", 1.5)
 proxySpeech.setParameter("doubleVoice", 0.0)
-
+def convertion():
+        text = recognize()
+        if text != "":
+            # naoSay(proxySpeech, "nn")
+            print(text)
+            naoSay(proxySpeech, openai(text))
+        else: 
+            print("je vous ecoute")
+            naoSay(proxySpeech, "je ne vous ai pas compris, Repetez s'il vous plait")
+            convertion()
+            
+            
 
 while True:
-    question_humain = ""
     text = recognize()
 
-    if text != "":
+    if text == "Ok" or text == "ok" or text == "OK":
         print("You said: {}".format(text))
+        naoSay(proxySpeech, "OUI")
+        convertion()
         
-        naoSay(proxySpeech, openai(text))
-        
-    else: 
-        print("je vous ecoute")
-        naoSay(proxySpeech, "je ne vous ai pas compris")
 
     if text == "stop" or text == "Stop":
         break
