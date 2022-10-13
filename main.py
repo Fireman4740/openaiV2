@@ -11,15 +11,21 @@ import pyaudio
 import requests
 import json
 import os
+from naoqi import *
+from dotenv import dotenv_values
 from dotenv import load_dotenv
 
 load_dotenv()
-from naoqi import *
 
-IP = str(os.getenv('NAO_IP'))
-PORT = str(os.getenv('NAO_PORT'))
+IP = "172.30.77.82"
+PORT = 9559
+
+print(os.environ.get('NAO_IP'))
+print(os.environ.get('OPENAI_API_KEY'))
 def configNao(Name):
+    
     try:
+        
         tts = ALProxy(Name, IP, PORT)
     except Exception as e:
         print ("Could not create proxy ")
@@ -28,11 +34,13 @@ def configNao(Name):
     return tts
 
 url = "https://api.openai.com/v1/completions"
+apikey = os.environ.get('OPENAI_API_KEY')
 
 headers = {
 'Content-Type': 'application/json',
-'Authorization': os.getenv('OPENAI-KEY')
+'Authorization': apikey,
 }
+print(headers)
 start_sequence = "\nAI:"
 restart_sequence = "\nHuman: "
 init_ai = "Ce qui suit est une conversation avec un assistant d IA qui s'appelle Nao en francais. L assistant est serviable, creatif, intelligent et tres sympathique. L assistant peu faire des blagues. "
@@ -50,15 +58,21 @@ def openai(text):
     "presence_penalty": 0.0,
     "stop": [ " Human:", " AI:"]
     })
+    
     response = requests.request("POST", url, headers=headers, data=payload)
     
-    y = json.loads(response.text)
+    if response.status_code == 200:
+        y = json.loads(response.text)
+        parse = (y["choices"][0]["text"]).encode('utf-8')
+        z = parse.split("Nao:")
+        # z = z[0].split("Assistant:")
+        # print(z)
+        return str(z[len(z)-1])
+    else:
+        print("error")
+        print(response.status_code)
+        return "error"+ str(response.status_code)
     
-    parse = (y["choices"][0]["text"]).encode('utf-8')
-    z = parse.split("Nao:")
-    # z = z[0].split("Assistant:")
-    print(z)
-    return str(z[len(z)-1])
 
 def recognize():
     r = sr.Recognizer()
