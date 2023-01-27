@@ -3,9 +3,7 @@
 # encoding: utf-8
 import encodings
 from importlib import *
-import keyword
 import os
-import unicodedata
 import speech_recognition as sr
 import pyaudio
 import requests
@@ -13,12 +11,13 @@ import json
 import os
 from naoqi import *
 from dotenv import dotenv_values
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 
-load_dotenv()
 
-IP = "172.30.77.82"
-PORT = 9559
+load_dotenv() 
+
+IP = os.environ.get('NAO_IP')
+PORT = os.environ.get('OPENAI_API_KEY')
 
 print(os.environ.get('NAO_IP'))
 print(os.environ.get('OPENAI_API_KEY'))
@@ -74,6 +73,7 @@ def openai(text):
         return "error"+ str(response.status_code)
     
 
+
 def recognize():
     r = sr.Recognizer()
     with sr.Microphone() as source:
@@ -97,7 +97,7 @@ def naoSay(proxy,text):
 
 proxySpeech = configNao("ALTextToSpeech")
 proxySpeech.setParameter("pitchShift", 1.5)
-proxySpeech.setParameter("doubleVoice", 0.0)
+proxySpeech.setParameter("doubleVoice", 0.0) 
 def convertion():
         text = recognize()
         if text != "":
@@ -106,7 +106,7 @@ def convertion():
             naoSay(proxySpeech, openai(text))
         else: 
             print("je vous ecoute")
-            naoSay(proxySpeech, "je ne vous ai pas compris, Repetez s'il vous plait")
+            #naoSay(proxySpeech, "je ne vous ai pas compris, Repetez s'il vous plait")
             convertion()
             
             
